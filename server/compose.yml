@@ -1,0 +1,7 @@
+services:
+  eink-server:
+    build: https://github.com/codeincontext/eink-esp32.git#main:server
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

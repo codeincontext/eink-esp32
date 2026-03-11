@@ -1,0 +1,14 @@
+# Recurring dates (DD-MM) and one-time dates (YYYY-MM-DD)
+# warn_days: how many days before the date to start showing it
+
+- name: "Alice's birthday"
+  date: "15-06"
+  warn_days: 14
+
+- name: "Wedding anniversary"
+  date: "22-09"
+  warn_days: 14
+
+- name: "Dentist appointment"
+  date: "2026-04-10"
+  warn_days: 7

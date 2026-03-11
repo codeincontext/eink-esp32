@@ -1,0 +1,7 @@
+.pio/
+waveshare-repo/
+__pycache__/
+src/config.h
+server/.env
+server/data/dates.yml
+server/data/.weather_cache.json

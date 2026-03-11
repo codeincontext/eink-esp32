@@ -1,0 +1,349 @@
+- text: Simplicity is the ultimate sophistication.
+  author: Leonardo da Vinci
+  context: Attributed to Leonardo, though likely apocryphal. The idea recurs across
+    disciplines — in design, engineering, writing, and mathematics, the hardest thing
+    is to make something simple.
+- text: The first principle is that you must not fool yourself — and you are the easiest
+    person to fool.
+  author: Feynman
+  context: From his 1974 Caltech commencement address on cargo cult science. Feynman
+    argued that scientific integrity starts with ruthless self-honesty.
+- text: There is nothing so useless as doing efficiently that which should not be
+    done at all.
+  author: Peter Drucker
+  context: From The Effective Executive (1967). Drucker's distinction between efficiency
+    and effectiveness — doing things right versus doing the right things.
+- text: The things you own end up owning you.
+  author: Chuck Palahniuk
+  context: From Fight Club (1996). Tyler Durden's anti-consumerist manifesto, updating
+    Thoreau's idea that possessions are a form of bondage.
+- text: Rien ne se perd, rien ne se crée, tout se transforme.
+  author: Lavoisier
+  context: 'Lavoisier''s paraphrase of Anaxagoras, codified in his Traité élémentaire
+    de chimie (1789). The conservation of mass, stated as philosophy: nothing is lost,
+    nothing is created, everything transforms.'
+- text: Everything we hear is an opinion, not a fact. Everything we see is a perspective,
+    not the truth.
+  author: Marcus Aurelius
+  context: Widely attributed to the Meditations, though the exact phrasing is modern.
+    It captures the Stoic emphasis on distinguishing impressions from reality.
+- text: Freedom is what we do with what is done to us.
+  author: Sartre
+  context: 'A distillation of Sartre''s existentialism: we cannot choose our circumstances,
+    but we are always free to choose our response.'
+- text: Life can only be understood backwards; but it must be lived forwards.
+  author: Kierkegaard
+  context: 'From his journal (1843). The irony at the heart of experience: meaning
+    only becomes clear in retrospect, but we must act without that clarity.'
+- text: The mind is not a vessel to be filled, but a fire to be kindled.
+  author: Plutarch
+  context: From On Listening to Lectures. Plutarch was criticising students who treat
+    education as passive accumulation rather than active engagement with ideas.
+- text: You never change things by fighting the existing reality. To change something,
+    build a new model that makes the existing model obsolete.
+  author: Buckminster Fuller
+  context: Fuller, the architect and systems thinker, believed that direct opposition
+    to entrenched systems is futile. Better to create alternatives so compelling they
+    replace what came before.
+- text: The unexamined life is not worth living.
+  author: Socrates
+  context: Spoken at his trial, as recorded in Plato's Apology. Socrates chose death
+    over giving up philosophical inquiry.
+- text: The computer is incredibly fast, accurate, and stupid. Man is incredibly slow,
+    inaccurate, and brilliant. The marriage of the two is a force beyond calculation.
+  author: Leo Cherne
+  context: Often misattributed to Einstein. Cherne, an economist and public servant,
+    captured the essence of human-computer collaboration decades before it became
+    commonplace.
+- text: The function of good software is to make the complex appear to be simple.
+  author: Grady Booch
+  context: From the software engineer and UML co-creator. Booch's point is that the
+    complexity doesn't disappear — good design hides it behind clean abstractions.
+- text: We are what we repeatedly do. Excellence, then, is not an act, but a habit.
+  author: Will Durant
+  context: Often attributed to Aristotle, but actually Durant's summary of the Nicomachean
+    Ethics in The Story of Philosophy (1926). The paraphrase has outlived the original.
+- text: A human being should be able to change a diaper, plan an invasion, butcher
+    a hog, design a building, write a sonnet, balance accounts, set a bone, comfort
+    the dying, take orders, give orders, cooperate, act alone, solve equations, pitch
+    manure, cook a tasty meal, fight efficiently, die gallantly. Specialisation is
+    for insects.
+  author: Heinlein
+  context: From Time Enough for Love (1973). Lazarus Long's manifesto for the generalist
+    — competence across domains as a human ideal.
+- text: The details are not the details. They make the design.
+  author: Charles Eames
+  context: Attributed to the designer Charles Eames. For him, craft lay in the accumulation
+    of small decisions — there is no design apart from its details.
+- text: I have no special talents. I am only passionately curious.
+  author: Einstein
+  context: From a 1952 letter. Whether or not we take Einstein at his word, the claim
+    reframes genius as a disposition — sustained curiosity rather than innate brilliance.
+- text: What I cannot create, I do not understand.
+  author: Feynman
+  context: Written on his blackboard at the time of his death (1988). For Feynman,
+    true understanding meant being able to build something from first principles.
+- text: 'There are only two hard things in Computer Science: cache invalidation and
+    naming things.'
+  author: Phil Karlton
+  context: Attributed to the Netscape engineer, c. 1996. A joke that endures because
+    it's true — the hardest problems in software are often about naming, state, and
+    knowing when something is stale.
+- text: When you arise in the morning, think of what a privilege it is to be alive
+    — to think, to enjoy, to love.
+  author: Marcus Aurelius
+  context: 'Meditations, Book 5. Aurelius wrote this as self-discipline: the passage
+    continues by chastising himself for wanting to stay in bed.'
+- text: The best time to plant a tree was twenty years ago. The second best time is
+    now.
+  author: Proverb
+  context: Usually attributed to Chinese wisdom, though the exact origin is uncertain.
+    A reminder that regret about the past is less useful than action in the present.
+- text: We are a way for the cosmos to know itself.
+  author: Carl Sagan
+  context: 'From the opening of Cosmos (1980). Sagan''s point is literal: we are made
+    of stellar material that has arranged itself into beings capable of studying stars.'
+- text: Premature optimisation is the root of all evil.
+  author: Donald Knuth
+  context: From Structured Programming with go to Statements (1974). Knuth's full
+    quote adds nuance — we should forget about small efficiencies 97% of the time,
+    but not miss the critical 3%.
+- text: First, solve the problem. Then, write the code.
+  author: John Johnson
+  context: A reminder that programming is problem-solving, not typing. The urge to
+    start coding before understanding the problem is one of the most common sources
+    of wasted effort.
+- text: The meaning of life is just to be alive. It is so plain and so obvious and
+    so simple. And yet, everybody rushes around in a great panic as if it were necessary
+    to achieve something beyond themselves.
+  author: Alan Watts
+  context: From The Culture of Counter-Culture. Watts, who brought Eastern philosophy
+    to Western audiences, argued against the trap of perpetual striving.
+- text: All models are wrong, but some are useful.
+  author: George Box
+  context: From the statistician's 1976 paper. Box's point is that a model doesn't
+    need to be true to be valuable — it needs to be useful enough for the task at
+    hand.
+- text: There is nothing either good or bad, but thinking makes it so.
+  author: Shakespeare
+  context: Hamlet, Act 2, Scene 2. Hamlet makes a proto-Stoic observation to Rosencrantz
+    and Guildenstern about the subjectivity of experience.
+- text: Act as if what you do makes a difference. It does.
+  author: William James
+  context: From the founder of American pragmatism. James argued that belief and action
+    are inseparable — choosing to act as if something matters is itself a meaningful
+    choice.
+- text: Doubt is not a pleasant condition, but certainty is absurd.
+  author: Voltaire
+  context: From a 1770 letter to Frederick the Great. Voltaire championed scepticism
+    as the only honest intellectual stance.
+- text: The whole problem with the world is that fools and fanatics are always so
+    certain of themselves, and wiser people so full of doubts.
+  author: Bertrand Russell
+  context: A paraphrase of ideas Russell expressed throughout his work, echoing the
+    Dunning-Kruger effect decades before it had a name.
+- text: In the depth of winter, I finally learned that within me there lay an invincible
+    summer.
+  author: Camus
+  context: From the essay Return to Tipasa (1954). Camus revisits the Algerian ruins
+    of his youth and finds that joy persists despite everything.
+- text: Live as if you were to die tomorrow. Learn as if you were to live forever.
+  author: Gandhi
+  context: Widely attributed to Gandhi, though the exact source is uncertain. The
+    tension between urgency and patience — act now, but never stop growing.
+- text: Between stimulus and response there is a space. In that space is our freedom.
+  author: Viktor Frankl
+  context: Often attributed to Man's Search for Meaning, though the exact phrasing
+    may be a paraphrase. Frankl, a Holocaust survivor, argued that inner freedom persists
+    even in extremity.
+- text: The reasonable man adapts himself to the world. The unreasonable one persists
+    in trying to adapt the world to himself. Therefore all progress depends on the
+    unreasonable man.
+  author: Shaw
+  context: 'From Man and Superman (1903). Shaw''s paradox: conformity maintains the
+    status quo; only stubborn vision drives change.'
+- text: The more I learn, the more I realise how much I don't know.
+  author: Einstein
+  context: Widely attributed to Einstein, echoing Socrates. The expanding circle of
+    knowledge increases the perimeter of contact with the unknown.
+- text: 'Hofstadter''s Law: it always takes longer than you expect, even when you
+    take into account Hofstadter''s Law.'
+  author: Douglas Hofstadter
+  context: From Godel, Escher, Bach (1979). A self-referential observation about planning
+    fallacy — our inability to estimate time accurately persists even when we know
+    about the bias.
+- text: We shape our tools and thereafter our tools shape us.
+  author: Marshall McLuhan
+  context: 'Often attributed to McLuhan''s Understanding Media (1964), though the
+    exact phrasing may come from his colleague John Culkin. The idea: technology is
+    never neutral — it remakes its users.'
+- text: Ships in harbour are safe, but that is not what ships are built for.
+  author: John A. Shedd
+  context: From Salt from My Attic (1928). A reminder that safety and purpose are
+    often in tension, and that avoiding all risk means avoiding all function.
+- text: Not everything that counts can be counted, and not everything that can be
+    counted counts.
+  author: William Bruce Cameron
+  context: Often misattributed to Einstein. From Cameron's 1963 text on sociology.
+    A warning against reducing complex realities to simple metrics.
+- text: It is not the strongest that survive, nor the most intelligent, but the most
+    responsive to change.
+  author: Darwin
+  context: 'Widely attributed to Darwin though the phrasing is a 20th-century paraphrase.
+    It captures the core of natural selection: fitness is about fit to environment,
+    not absolute strength.'
+- text: If I have seen further, it is by standing on the shoulders of giants.
+  author: Newton
+  context: From a 1675 letter to Robert Hooke. Often read as gracious humility, though
+    some historians suspect it was a veiled dig at the short-statured Hooke. Either
+    way, the point about cumulative knowledge stands.
+- text: The real voyage of discovery consists not in seeking new landscapes, but in
+    having new eyes.
+  author: Proust
+  context: From The Prisoner (volume 5 of In Search of Lost Time). Proust's point
+    is that perception matters more than geography — insight transforms the familiar.
+- text: The obstacle is the way.
+  author: Marcus Aurelius
+  context: A paraphrase of Meditations, Book 5. The Stoic emperor argued that impediments
+    to action can advance action — what stands in the way becomes the way.
+- text: The only true wisdom is in knowing you know nothing.
+  author: Socrates
+  context: From Plato's Apology. Socrates distinguished himself from other Athenians
+    by recognising the limits of his own knowledge — the so-called Socratic paradox.
+- text: One must imagine Sisyphus happy.
+  author: Camus
+  context: The closing line of The Myth of Sisyphus (1942). Camus argues that acknowledging
+    life's absurdity doesn't require despair — the struggle itself can be enough.
+- text: Complexity is the enemy of security.
+  author: Bruce Schneier
+  context: From the cryptographer and security researcher. Schneier argues that every
+    line of code, every feature, every configuration option is a potential attack
+    surface.
+- text: He who has a why to live can bear almost any how.
+  author: Nietzsche
+  context: From Twilight of the Idols (1889). Viktor Frankl later made this idea central
+    to logotherapy — meaning as the key to endurance.
+- text: Programs must be written for people to read, and only incidentally for machines
+    to execute.
+  author: Abelson & Sussman
+  context: From the preface to Structure and Interpretation of Computer Programs (1985),
+    the legendary MIT textbook. Code is communication between humans first, instructions
+    for machines second.
+- text: Every act of creation is first an act of destruction.
+  author: Picasso
+  context: Attributed to Picasso, reflecting his practice of breaking conventions
+    to build new forms. You cannot make space for the new without dismantling some
+    of the old.
+- text: The world is full of obvious things which nobody by any chance ever observes.
+  author: Conan Doyle
+  context: Sherlock Holmes in The Hound of the Baskervilles (1902). Doyle's detective
+    stories are built on the premise that careful observation is a rare and powerful
+    skill.
+- text: Knowledge speaks, but wisdom listens.
+  author: Hendrix
+  context: Attributed to Jimi Hendrix, though the provenance is uncertain. A reminder
+    that receptivity is as important as expression.
+- text: The purpose of a system is what it does.
+  author: Stafford Beer
+  context: From the cybernetics pioneer's POSIWID principle. Beer argued that intentions
+    and stated goals are irrelevant — a system's purpose is revealed only by its actual
+    behaviour and outputs.
+- text: I must not fear. Fear is the mind-killer.
+  author: Frank Herbert
+  context: The Litany Against Fear from Dune (1965). The Bene Gesserit mantra treats
+    fear as a passing condition to be observed and released rather than obeyed.
+- text: Entities should not be multiplied beyond necessity.
+  author: William of Ockham
+  context: Ockham's Razor, from the 14th-century friar. Not that the simplest explanation
+    is always correct, but that complexity requires justification. A principle for
+    thinking, not a law of nature.
+- text: The map is not the territory.
+  author: Alfred Korzybski
+  context: 'From Science and Sanity (1933). Korzybski''s point: our abstractions and
+    models are useful but always incomplete — confusing them with reality leads to
+    errors.'
+- text: Unix is simple. It just takes a genius to understand its simplicity.
+  author: Dennis Ritchie
+  context: From the co-creator of Unix and the C programming language. The joke contains
+    a real insight — Unix's power comes from composing simple tools, but seeing the
+    elegance requires understanding the philosophy.
+- text: Any sufficiently advanced technology is indistinguishable from magic.
+  author: Arthur C. Clarke
+  context: Clarke's Third Law, from Profiles of the Future (1962). The corollary is
+    equally interesting — any technology distinguishable from magic is insufficiently
+    advanced.
+- text: Science is the belief in the ignorance of experts.
+  author: Feynman
+  context: From a 1966 address to science teachers. Feynman meant that science progresses
+    by questioning authority, not deferring to it.
+- text: The test of a first-rate intelligence is the ability to hold two opposing
+    ideas in mind at the same time and still retain the ability to function.
+  author: F. Scott Fitzgerald
+  context: From The Crack-Up (1936), Fitzgerald's essay on his own breakdown. The
+    line is often quoted for its insight; the essay is about how he failed his own
+    test.
+- text: It's harder to read code than to write it.
+  author: Joel Spolsky
+  context: From Things You Should Never Do (2000). Spolsky argued this is why developers
+    always want to rewrite from scratch — they underestimate existing code because
+    reading it feels harder than it was to write.
+- text: 'The most dangerous phrase in the language is: we''ve always done it this
+    way.'
+  author: Grace Hopper
+  context: Rear Admiral Hopper, pioneer of COBOL and compiler design, fought institutional
+    inertia throughout her career. She kept a clock on her wall that ran backwards
+    to make the same point.
+- text: The lyf so short, the craft so long to lerne.
+  author: Chaucer
+  context: The opening line of The Parliament of Fowls (c. 1382), itself a translation
+    of Hippocrates' aphorism. A reminder that mastery demands more time than any single
+    life offers.
+- text: The universe is not only queerer than we suppose, but queerer than we can
+    suppose.
+  author: J.B.S. Haldane
+  context: From Possible Worlds (1927). Haldane, a geneticist and polymath, was pointing
+    out that reality consistently outruns our capacity for imagination.
+- text: Il faut cultiver notre jardin.
+  author: Voltaire
+  context: The final line of Candide (1759). After witnessing every kind of catastrophe,
+    Candide concludes that tending one's own garden — modest, concrete work — is the
+    sanest response to the world.
+- text: The only way to do great work is to love what you do.
+  author: Steve Jobs
+  context: From his 2005 Stanford commencement address. Jobs connected this to his
+    own firing from Apple — the setback freed him to follow curiosity rather than
+    obligation.
+- text: No man ever steps in the same river twice, for it is not the same river and
+    he is not the same man.
+  author: Heraclitus
+  context: Fragment B12, c. 500 BCE. Heraclitus held that change is the fundamental
+    nature of reality — everything flows (panta rhei).
+- text: We suffer more often in imagination than in reality.
+  author: Seneca
+  context: From Letters to Lucilius, Letter 13. Seneca advises that most of our anxiety
+    comes from rehearsing disasters that never arrive.
+- text: To pay attention, this is our endless and proper work.
+  author: Mary Oliver
+  context: From the poem "Yes! No!" in the collection New and Selected Poems. Oliver's
+    poetry returns again and again to the practice of noticing the natural world.
+- text: Waste no more time arguing about what a good man should be. Be one.
+  author: Marcus Aurelius
+  context: Meditations, Book 10. Aurelius, writing for himself during military campaigns,
+    constantly pushed past theory toward practice.
+- text: We do not see things as they are, we see them as we are.
+  author: Anaïs Nin
+  context: From Seduction of the Minotaur (1961). Nin's observation echoes the Talmudic
+    saying and anticipates modern cognitive psychology on perceptual bias.
+- text: Perfection is achieved not when there is nothing more to add, but when there
+    is nothing left to take away.
+  author: Saint-Exupéry
+  context: From Wind, Sand and Stars (1939). Saint-Exupéry was writing about aircraft
+    design, but the principle applies to any craft.
+- text: Man is the only creature who refuses to be what he is.
+  author: Camus
+  context: From The Rebel (1951). Camus sees this refusal not as a flaw but as the
+    root of both creativity and revolt — the defining human gesture.
+- text: If you gaze long enough into an abyss, the abyss also gazes into you.
+  author: Nietzsche
+  context: 'From Beyond Good and Evil, aphorism 146 (1886). The full passage also
+    warns: "He who fights monsters should see to it that he does not become a monster."'
