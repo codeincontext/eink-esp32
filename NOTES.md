@@ -188,3 +188,10 @@ Docker container (OMV) → MQTT broker (existing, Home Assistant) → ESP32 → 
 - [ ] Template system with multiple layouts
 - [ ] Wildcard/LLM mode
 - [ ] Consider WROVER upgrade path for CalEPD
+
+## Future: 13.3" Spectra 6 full-colour e-ink
+
+7 colours (black, white, red, yellow, blue, green, orange), 1600x1200. Slower refresh (~30s+) but much richer output for a daily status board.
+
+- Pimoroni Inky Impression 13.3": https://shop.pimoroni.com/products/inky-impression?variant=55186435277179
+- Waveshare 13.3" e-Paper HAT+: https://www.waveshare.com/13.3inch-e-paper-hat-plus-e.htm
