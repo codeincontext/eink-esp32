@@ -187,7 +187,8 @@ static void connectMQTT()
 // Word-wrap text within a pixel width, advancing y. When draw=false,
 // only tracks y so red/black passes stay in sync.
 static int16_t drawWrapped(EinkCanvas &c, const char *text, int16_t x, int16_t y,
-                           int16_t maxW, int16_t lineH, bool draw)
+                           int16_t maxW, int16_t lineH, bool draw,
+                           uint16_t *outMaxW = nullptr)
 {
     char buf[512];
     strlcpy(buf, text, sizeof(buf));
@@ -196,6 +197,7 @@ static int16_t drawWrapped(EinkCanvas &c, const char *text, int16_t x, int16_t y
     char *word;
     char line[256];
     line[0] = '\0';
+    uint16_t widest = 0;
 
     while ((word = strtok_r(rest, " ", &rest)) != nullptr) {
         char candidate[256];
@@ -209,6 +211,9 @@ static int16_t drawWrapped(EinkCanvas &c, const char *text, int16_t x, int16_t y
         c.getTextBounds(candidate, 0, 0, &bx, &by, &tw, &th);
 
         if (tw > (uint16_t)maxW && line[0]) {
+            int16_t lbx, lby; uint16_t lw, lh;
+            c.getTextBounds(line, 0, 0, &lbx, &lby, &lw, &lh);
+            if (lw > widest) widest = lw;
             if (draw) { c.setCursor(x, y); c.print(line); }
             y += lineH;
             strlcpy(line, word, sizeof(line));
@@ -218,10 +223,14 @@ static int16_t drawWrapped(EinkCanvas &c, const char *text, int16_t x, int16_t y
     }
 
     if (line[0]) {
+        int16_t lbx, lby; uint16_t lw, lh;
+        c.getTextBounds(line, 0, 0, &lbx, &lby, &lw, &lh);
+        if (lw > widest) widest = lw;
         if (draw) { c.setCursor(x, y); c.print(line); }
         y += lineH;
     }
 
+    if (outMaxW) *outMaxW = widest;
     return y;
 }
 
@@ -349,12 +358,10 @@ static void renderScene(EinkCanvas &c, bool black, bool red)
     if (dThoughtText[0]) {
         // Measure height with a dry run
         int16_t th = 20; // gap above quote
-        const char *p = dThoughtText;
-        while (*p) {
-            const char *nl = strchr(p, '\n');
-            if (nl) { p = nl + 1; th += 48; } else { break; }
-        }
-        if (dThoughtAuthor[0]) th += 40;
+        c.setFont(&FreeSerifBoldItalic24pt7b);
+        uint16_t quoteW = 0;
+        th += drawWrapped(c, dThoughtText, L, 0, W, 48, false, &quoteW);
+        if (dThoughtAuthor[0]) th += 0;
         if (dThoughtContext[0]) {
             th += 65;
             c.setFont(&FreeSans12pt7b);
@@ -369,43 +376,21 @@ static void renderScene(EinkCanvas &c, bool black, bool red)
         y += 20;
 
         c.setFont(&FreeSerifBoldItalic24pt7b);
-        p = dThoughtText;
-        while (*p) {
-            const char *nl = strchr(p, '\n');
-            if (black) {
-                c.setCursor(L, y);
-                if (nl) {
-                    char line[256];
-                    int len = min((int)(nl - p), 255);
-                    memcpy(line, p, len);
-                    line[len] = '\0';
-                    c.print(line);
-                } else {
-                    c.print(p);
-                }
-            }
-            if (nl) {
-                p = nl + 1;
-                y += 48;
-            } else {
-                break;
-            }
-        }
+        y = drawWrapped(c, dThoughtText, L, y, W, 48, black, &quoteW);
 
         if (dThoughtAuthor[0]) {
-            y += 40;
             c.setFont(&FreeSerifItalic18pt7b);
+            char attrib[96];
+            snprintf(attrib, sizeof(attrib), "- %s", dThoughtAuthor);
+            int16_t bx, by; uint16_t tw, th2;
+            c.getTextBounds(attrib, 0, 0, &bx, &by, &tw, &th2);
+            int16_t ax = L + quoteW - tw;
             if (black) {
-                c.setCursor(L + 400, y);
-                c.print("- ");
-                c.print(dThoughtAuthor);
+                c.setCursor(ax, y);
+                c.print(attrib);
             }
             if (red) {
-                char attrib[96];
-                snprintf(attrib, sizeof(attrib), "- %s", dThoughtAuthor);
-                int16_t bx, by; uint16_t tw, th2;
-                c.getTextBounds(attrib, L + 400, y, &bx, &by, &tw, &th2);
-                c.fillRect(L + 400, y + 10, tw + 20, 3, BLACK);
+                c.fillRect(ax, y + 10, tw + 20, 3, BLACK);
             }
         }
 
