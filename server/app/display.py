@@ -1,32 +1,27 @@
-import json
 from datetime import datetime
-from .sources import dates, holidays, thoughts, weather
+from .sources import dates, holidays, thoughts, weather_openmeteo as weather
 
-
-def _sanitize(obj):
-    """Replace characters that aren't in the display's font glyphs."""
-    raw = json.dumps(obj, ensure_ascii=False)
-    raw = raw.replace("\u2014", "-")  # em-dash
-    raw = raw.replace("\u2013", "-")  # en-dash
-    return json.loads(raw)
+UPCOMING_SLOTS = 5
+EMPTY_TEXT = "​"  # zero-width space — non-whitespace, renders as nothing
 
 
 def build() -> dict:
-    """Assemble the display JSON from all data sources."""
+    """Assemble the SensCraft push payload from all data sources."""
     now = datetime.now()
 
-    sections = []
+    raw = sorted(
+        dates.get_upcoming() + holidays.get_upcoming(),
+        key=lambda x: x["days_remaining"],
+    )
+    upcoming = [
+        raw[i] if i < len(raw) else {"text": EMPTY_TEXT, "days_remaining": -1}
+        for i in range(UPCOMING_SLOTS)
+    ]
 
-    upcoming = dates.get_upcoming() + holidays.get_upcoming()
-    upcoming.sort(key=lambda x: x[0])
-    if upcoming:
-        sections.append({"heading": "Upcoming", "items": [text for _, text in upcoming]})
-
-    payload = {
-        "title": "DAILY BRIEF",
-        "subtitle": now.strftime("%A, %B %-d"),
-        "sections": sections,
+    payload: dict = {
+        "date": now.strftime("%A, %B %-d"),
         "footer": f"Updated {now.strftime('%H:%M')}",
+        "upcoming": upcoming,
     }
 
     thought = thoughts.get_thought()
@@ -35,6 +30,8 @@ def build() -> dict:
 
     wx = weather.get_weather()
     if wx:
-        payload["weather"] = wx
+        payload["weather"] = wx.get("days", {})
+        if "walk" in wx:
+            payload["walk"] = wx["walk"]
 
-    return _sanitize(payload)
+    return payload

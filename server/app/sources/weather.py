@@ -29,8 +29,6 @@ PICTOCODE = {
     17: "Light snow",
 }
 
-RED = "\x01"
-
 WALK_START = 8
 WALK_END = 18
 DAYTIME_START = 7
@@ -137,21 +135,22 @@ def _walk_summary(hourly: dict) -> str | None:
     )
 
     if not dry_windows:
-        return f"{RED}No dry windows today"
+        return "No dry windows today"
 
     if all_dry:
         warmest = max(hours, key=lambda h: h["temp"])
-        return f"Dry all day, warmest around {warmest['hour']}:00 ({round(warmest['temp'])}\u00b0C)"
+        return f"Dry all day, warmest around {warmest['hour']}:00 ({round(warmest['temp'])}°C)"
 
     best = max(dry_windows, key=lambda w: w[1]["hour"] - w[0]["hour"])
     start_h = best[0]["hour"]
     end_h = best[1]["hour"] + 1
-    duration = end_h - start_h
     best_temp = max(h["temp"] for h in hours if start_h <= h["hour"] <= best[1]["hour"])
-    text = f"Dry {start_h}:00\u2013{end_h}:00 ({round(best_temp)}\u00b0C)"
-    if duration <= 3:
-        return f"{RED}{text}"
-    return text
+    return f"Dry {start_h}:00–{end_h}:00 ({round(best_temp)}°C)"
+
+
+def _format_summary(label: str, condition: str, high: int, low: int) -> str:
+    body = f"{condition}, {high}/{low}°C"
+    return f"{label}: {body}" if label else body
 
 
 def get_weather() -> dict | None:
@@ -162,14 +161,12 @@ def get_weather() -> dict | None:
     now = datetime.now()
     is_daytime = DAYTIME_START <= now.hour < DAYTIME_END
 
-    # Try cache first
     data = _load_cache()
     if data is None:
         if is_daytime:
             logger.info("Weather: fetching from API")
             data = _fetch_api()
         else:
-            # Nighttime with stale/no cache — serve stale if available
             logger.info("Weather: nighttime, using stale cache if available")
             if os.path.exists(CACHE_PATH):
                 try:
@@ -186,24 +183,31 @@ def get_weather() -> dict | None:
     if not times:
         return None
 
-    days = []
-    for i in range(min(3, len(times))):
+    slot_keys = ["today", "tomorrow", "day3"]
+    days = {}
+    for i, key in enumerate(slot_keys):
+        if i >= len(times):
+            break
         picto = day.get("pictocode", [None])[i]
+        condition = PICTOCODE.get(picto, "?")
         dt = datetime.strptime(times[i], "%Y-%m-%d")
         label = "" if i == 0 else dt.strftime("%A")
+        high = round(day["temperature_max"][i])
+        low = round(day["temperature_min"][i])
         total_mm = day["precipitation"][i]
         snow_frac = day.get("snowfraction", [0])[i] or 0
         rain_mm = round(total_mm * (1 - snow_frac), 1)
-        snow_cm = round(total_mm * snow_frac, 1)  # 1mm water ≈ 1cm snow
-        days.append({
+        snow_cm = round(total_mm * snow_frac, 1)
+        days[key] = {
+            "summary": _format_summary(label, condition, high, low),
             "label": label,
-            "high": round(day["temperature_max"][i]),
-            "low": round(day["temperature_min"][i]),
-            "condition": PICTOCODE.get(picto, "?"),
+            "condition": condition,
+            "high": high,
+            "low": low,
             "rain_mm": rain_mm,
             "snow_cm": snow_cm,
             "precip_prob": day.get("precipitation_probability", [None])[i],
-        })
+        }
 
     result = {"days": days}
 

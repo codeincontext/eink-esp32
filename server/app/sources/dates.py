@@ -22,8 +22,8 @@ def _days_until(entry_date: str, today: date) -> int | None:
         return delta if delta >= 0 else None
 
 
-def get_upcoming() -> list[tuple[int, str]]:
-    """Read dates.yml and return (days, text) tuples for upcoming events."""
+def get_upcoming() -> list[dict]:
+    """Read dates.yml and return {days_remaining, text} for upcoming events."""
     path = os.path.join(config.DATA_DIR, "dates.yml")
     if not os.path.exists(path):
         return []
@@ -39,6 +39,6 @@ def get_upcoming() -> list[tuple[int, str]]:
         warn_days = entry.get("warn_days", 14)
         days = _days_until(entry["date"], today)
         if days is not None and days <= warn_days:
-            upcoming.append((days, format_days(name, days)))
+            upcoming.append({"days_remaining": days, "text": format_days(name, days)})
 
     return upcoming

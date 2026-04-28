@@ -67,8 +67,8 @@ def _parse_ics(path: str, year: int) -> list[tuple[date, str]]:
     return events
 
 
-def get_upcoming() -> list[tuple[int, str]]:
-    """Return (days, text) tuples for upcoming holidays."""
+def get_upcoming() -> list[dict]:
+    """Return {days_remaining, text} for upcoming holidays."""
     today = date.today()
     warn_days = 14
     upcoming = []
@@ -80,12 +80,12 @@ def get_upcoming() -> list[tuple[int, str]]:
     for d, name in computed:
         delta = (d - today).days
         if 0 <= delta <= warn_days:
-            upcoming.append((delta, format_days(name, delta)))
+            upcoming.append({"days_remaining": delta, "text": format_days(name, delta)})
 
     ics_path = os.path.join(config.DATA_DIR, "holidays.ics")
     for d, name in _parse_ics(ics_path, today.year):
         delta = (d - today).days
         if 0 <= delta <= warn_days:
-            upcoming.append((delta, format_days(name, delta)))
+            upcoming.append({"days_remaining": delta, "text": format_days(name, delta)})
 
     return upcoming

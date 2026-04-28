@@ -1,12 +1,15 @@
-RED = "\x01"
+URGENT_DAYS = 2
+URGENT_ICON = "⚠"
 
 
 def format_days(name: str, days: int) -> str:
     if days == 0:
-        return f"{name} — {RED}today!"
+        body = f"{name} — today!"
     elif days == 1:
-        return f"{name} — {RED}tomorrow"
-    elif days <= 2:
-        return f"{name} — {RED}in {days} days"
+        body = f"{name} — tomorrow"
     else:
-        return f"{name} in {days} days"
+        body = f"{name} — in {days} days"
+
+    if days <= URGENT_DAYS:
+        return f"{URGENT_ICON} {body}"
+    return body

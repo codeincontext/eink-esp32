@@ -5,7 +5,7 @@ import traceback
 
 from . import config
 from . import display
-from . import mqtt
+from . import senscraft
 
 
 def _content_hash(payload: dict) -> str:
@@ -15,8 +15,8 @@ def _content_hash(payload: dict) -> str:
 
 
 def main() -> None:
-    print(f"eink-server starting")
-    print(f"  MQTT: {config.MQTT_HOST}:{config.MQTT_PORT} → {config.MQTT_TOPIC}")
+    print("eink-server starting")
+    print(f"  SensCraft device: {config.SENSECRAFT_DEVICE_ID}")
     print(f"  Poll interval: {config.POLL_INTERVAL}s")
     print(f"  Data dir: {config.DATA_DIR}")
 
@@ -29,7 +29,7 @@ def main() -> None:
 
             if h != last_hash:
                 print(f"Content changed (hash: {h[:12]}...)")
-                mqtt.publish(payload)
+                senscraft.publish(payload)
                 last_hash = h
             else:
                 print("No changes, skipping publish")
