@@ -188,6 +188,25 @@ Docker container (OMV) → MQTT broker (existing, Home Assistant) → ESP32 → 
 - [ ] Template system with multiple layouts
 - [ ] Wildcard/LLM mode
 - [ ] Consider WROVER upgrade path for CalEPD
+- [ ] Migrate weather "daily condition" from Open-Meteo to Météo-France direct (see below)
+
+## Future: weather provider — Météo-France direct
+
+Currently using Open-Meteo's `/v1/meteofrance` endpoint with `meteofrance_arome_france_hd` + `meteofrance_arpege_europe`. Underlying model data is Météo-France's, but the **daily aggregation** is Open-Meteo's: it picks the most-significant hourly weather code, which produces "Light rain" for a day with 23h overcast and 1h trace drizzle.
+
+Workaround in place: derive the dominant hourly weather code ourselves during waking hours.
+
+Why Météo-France direct may still be worth it later:
+- Their daily summary is human-tuned / climatology-aware
+- Fewer pessimistic mismatches between condition and precipitation
+- We're already targeting their data — going through one fewer hop
+
+Costs to plan for:
+- Register on portail-api.meteofrance.fr (token-based auth, French portal)
+- Different condition codes — own pictocodes, not WMO. Need a new icon mapping table.
+- Endpoint paths and JSON shape to learn
+- Still need Open-Meteo for the hourly walk-window logic, OR refactor to use Météo-France for hourly too
+- Two providers running side-by-side during transition (treat the new one as `weather_alt` first, compare for a week, then promote)
 
 ## Future: 13.3" Spectra 6 full-colour e-ink
 

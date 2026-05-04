@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from .. import config
+from . import weather_narrative
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ def _fetch_api() -> dict | None:
             "precipitation_probability_max",
             "snowfall_sum",
         ]),
-        "hourly": "temperature_2m,precipitation",
+        "hourly": "temperature_2m,precipitation,weather_code",
         "forecast_days": 3,
         "timezone": "auto",
     }
@@ -148,6 +149,53 @@ def _walk_summary(hourly: dict) -> str | None:
     return f"Dry {start_h}h–{end_h}h ({round(window_temp)}°C)"
 
 
+# WMO codes that imply precipitation (drizzle/rain/snow/showers/thunder).
+# If AROME's hourly precipitation says 0 for an hour with one of these codes,
+# we treat the code as "overcast" (3) instead — the high-res precip is ground
+# truth, the code is sometimes a coarser-model artifact.
+_WET_CODES = frozenset({51, 53, 55, 56, 57, 61, 63, 65, 66, 67,
+                         71, 73, 75, 77, 80, 81, 82, 85, 86, 95, 96, 99})
+
+
+def _dominant_code(hourly: dict, date_str: str) -> int | None:
+    """Most-common weather code during the TEMP_WINDOW for the given date.
+
+    Open-Meteo's daily weather_code picks the most-significant hourly code,
+    so a single hour of trace drizzle dominates 23 hours of overcast.
+    AROME doesn't provide weather_code (only ARPEGE does), so we use AROME's
+    high-res precipitation to override "wet" codes that have no actual rain.
+    """
+    times = hourly.get("time", [])
+    code_p = hourly.get(f"weather_code_{PRIMARY_MODEL}", [])
+    code_f = hourly.get(f"weather_code_{FALLBACK_MODEL}", [])
+    precip_p = hourly.get(f"precipitation_{PRIMARY_MODEL}", [])
+    precip_f = hourly.get(f"precipitation_{FALLBACK_MODEL}", [])
+
+    counts: dict[int, int] = {}
+    for i, t in enumerate(times):
+        if not t.startswith(date_str):
+            continue
+        hour = int(t[11:13])
+        if not (TEMP_WINDOW_START <= hour < TEMP_WINDOW_END):
+            continue
+        code = code_p[i] if i < len(code_p) and code_p[i] is not None else None
+        if code is None:
+            code = code_f[i] if i < len(code_f) and code_f[i] is not None else None
+        if code is None:
+            continue
+        code = int(code)
+        precip = precip_p[i] if i < len(precip_p) and precip_p[i] is not None else None
+        if precip is None:
+            precip = precip_f[i] if i < len(precip_f) and precip_f[i] is not None else 0
+        if code in _WET_CODES and not (precip and precip > 0):
+            code = 3  # downgrade phantom wet codes to overcast
+        counts[code] = counts.get(code, 0) + 1
+
+    if not counts:
+        return None
+    return max(counts, key=counts.get)
+
+
 def _daytime_extremes(hourly: dict, date_str: str) -> tuple[float | None, float | None]:
     """Min and max temp for the given date, restricted to TEMP_WINDOW hours."""
     times = hourly.get("time", [])
@@ -212,7 +260,9 @@ def get_weather() -> dict | None:
     for i, key in enumerate(slot_keys):
         if i >= len(times):
             break
-        code = _pick(daily, "weather_code", i)
+        code = _dominant_code(data.get("hourly", {}), times[i])
+        if code is None:
+            code = _pick(daily, "weather_code", i)
         icon, condition = WMO_CODE.get(int(code), ("", "?")) if code is not None else ("", "?")
         dt = datetime.strptime(times[i], "%Y-%m-%d")
         label = "" if i == 0 else dt.strftime("%A")
@@ -247,5 +297,14 @@ def get_weather() -> dict | None:
         walk = _walk_summary(hourly)
         if walk:
             result["walk"] = walk
+
+        day_dates = [(k, times[i]) for i, k in enumerate(slot_keys) if i < len(times)]
+        narratives = weather_narrative.get_narratives(
+            hourly, day_dates, PRIMARY_MODEL, FALLBACK_MODEL
+        )
+        if narratives:
+            for slot, text in narratives.items():
+                if slot in days:
+                    days[slot]["narrative"] = text
 
     return result

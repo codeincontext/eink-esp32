@@ -17,3 +17,5 @@ LON = os.environ.get("LON", os.environ.get("METEOBLUE_LON", ""))
 METEOBLUE_API_KEY = os.environ.get("METEOBLUE_API_KEY", "")
 METEOBLUE_LAT = LAT
 METEOBLUE_LON = LON
+
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
