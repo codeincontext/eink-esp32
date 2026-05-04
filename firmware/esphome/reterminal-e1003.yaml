@@ -1,0 +1,218 @@
+# Daily-brief layout on reTerminal E1003.
+# Pulls strings from sensor.eink_* entities published by our Python server.
+
+substitutions:
+  device_name: reterminal-e1003
+  friendly_name: reTerminal E1003
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+
+psram:
+  mode: octal
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/koosoli/Seeed-10.3-inch-IT8951-ESPHome-Drivers
+      ref: b6de94aedaea55433db2458b5e5b15f4f7f20b1a
+    components: [it8951_reterminal_e1003]
+
+# Pin assignments are board-fixed for the reTerminal E1003.
+i2c:
+  - sda: GPIO19
+    scl: GPIO20
+    scan: true
+    id: bus_a
+
+spi:
+  - id: it8951_spi
+    clk_pin: GPIO7
+    mosi_pin: GPIO9
+    miso_pin: GPIO8
+
+touchscreen:
+  - platform: gt911
+    id: touchscreen_panel
+    interrupt_pin: GPIO2
+
+script:
+  # Restart-mode debounce: every entity arrival resets the timer, so a burst of
+  # state pushes from HA collapses into a single redraw at the end of the burst.
+  - id: debounced_redraw
+    mode: restart
+    then:
+      - delay: 2s
+      - component.update: epaper_display
+
+font:
+  - file: "gfonts://Roboto"
+    id: font_small
+    size: 26
+    glyphs: &glyphs "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:;-!?'\"()/+ °—–"
+  - file: "gfonts://Roboto"
+    id: font_med
+    size: 34
+    glyphs: *glyphs
+  - file: "gfonts://Roboto@700"
+    id: font_med_bold
+    size: 44
+    glyphs: *glyphs
+  - file: "gfonts://Roboto@700"
+    id: font_header
+    size: 56
+    bpp: 4   # white-on-black antialiasing for the date in the header bar
+    glyphs: *glyphs
+  - file: "gfonts://Merriweather@700"
+    id: font_quote
+    size: 72
+    glyphs: *glyphs
+  - file: "gfonts://Merriweather"
+    id: font_author
+    size: 38
+    glyphs: *glyphs
+  # Emoji icon font, monochrome (Noto Emoji is the line-drawn variant).
+  # bpp: 4 gives 16-level grayscale antialiasing — looks much smoother on
+  # the 226-DPI panel than the default 1-bit rendering.
+  - file: "gfonts://Noto Emoji"
+    id: font_icon
+    size: 96
+    bpp: 4
+    glyphs: "☀🌤⛅☁🌫🌦🌧🌨❄⛈"
+
+# Subscribe to entities our Python server publishes via HA REST API.
+# String values use text_sensor; numeric values use sensor.
+text_sensor:
+  - platform: homeassistant
+    id: eink_date
+    entity_id: sensor.eink_date
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_footer
+    entity_id: sensor.eink_footer
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_walk
+    entity_id: sensor.eink_walk
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_today_icon
+    entity_id: sensor.eink_weather_today_icon
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_today_body
+    entity_id: sensor.eink_weather_today_body
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_tomorrow_summary
+    entity_id: sensor.eink_weather_tomorrow_summary
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_day3_summary
+    entity_id: sensor.eink_weather_day3_summary
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_thought_text
+    entity_id: sensor.eink_thought_text
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_thought_author
+    entity_id: sensor.eink_thought_author
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_thought_context
+    entity_id: sensor.eink_thought_context
+    on_value: { then: [script.execute: debounced_redraw] }
+
+display:
+  - platform: it8951_reterminal_e1003
+    id: epaper_display
+    vcom: 1400
+    update_interval: never  # only update when an entity changes
+    lambda: |-
+      const auto WHITE  = Color(255, 255, 255);   // paper / background
+      const auto BLACK  = Color(0, 0, 0);         // ink / text
+      const auto GRAY   = Color(220, 220, 220);   // quote band background
+      const auto MUTED  = Color(64, 64, 64);      // secondary text on white (~75% ink)
+      const auto FOOTER = Color(60, 60, 60);      // barely-visible on black — meant to be ignored
+
+      // Word-wrap helper. Greedily fills lines up to max_width, breaking on
+      // spaces; advances y by line_height per line.
+      auto print_wrapped = [&](int x, int y, esphome::display::BaseFont* font,
+                               Color color, int max_width, int line_height,
+                               std::string text) {
+        int cy = y;
+        while (!text.empty()) {
+          size_t end = text.length();
+          while (end > 0) {
+            int x1, y1, w, h;
+            it.get_text_bounds(0, 0, text.substr(0, end).c_str(), font,
+                               TextAlign::TOP_LEFT, &x1, &y1, &w, &h);
+            if (w <= max_width) break;
+            size_t last_space = text.rfind(' ', end - 1);
+            if (last_space == std::string::npos || last_space == 0) break;
+            end = last_space;
+          }
+          if (end == 0) end = text.length();
+          it.print(x, cy, font, color, TextAlign::TOP_LEFT,
+                   text.substr(0, end).c_str());
+          cy += line_height;
+          if (end >= text.length()) break;
+          text = text.substr(end);
+          if (!text.empty() && text[0] == ' ') text = text.substr(1);
+        }
+      };
+
+      it.fill(WHITE);
+
+      // ------ HEADER (y 0–110, black bg, white text) ------
+      it.filled_rectangle(0, 0, 1872, 110, BLACK);
+      it.printf(60, 30, id(font_header), WHITE, "%s", id(eink_date).state.c_str());
+      it.print(1812, 40, id(font_small), FOOTER, TextAlign::TOP_RIGHT,
+               id(eink_footer).state.c_str());
+
+      // ------ WEATHER (y 110–650, two columns) ------
+      // Left column — today (x 60–1100)
+      it.printf(80, 200, id(font_icon), BLACK, "%s", id(eink_today_icon).state.c_str());
+      it.printf(80, 480, id(font_med_bold), BLACK, "%s", id(eink_today_body).state.c_str());
+      it.printf(80, 540, id(font_med), MUTED, "%s", id(eink_walk).state.c_str());
+
+      // Right column — tomorrow + day3 (x 1140–1812), bottom-anchored
+      it.printf(1140, 460, id(font_med), BLACK, "%s", id(eink_tomorrow_summary).state.c_str());
+      it.printf(1140, 520, id(font_med), BLACK, "%s", id(eink_day3_summary).state.c_str());
+
+      // ------ QUOTE BAND (y 650–1180, gray bg) ------
+      it.filled_rectangle(0, 650, 1872, 530, GRAY);
+      print_wrapped(120, 720, id(font_quote), BLACK, 1630, 96,
+                    id(eink_thought_text).state);
+      it.print(1812, 1110, id(font_author), BLACK, TextAlign::TOP_RIGHT,
+               id(eink_thought_author).state.c_str());
+
+      // ------ CONTEXT (y 1180–1404, white bg, small text) ------
+      print_wrapped(60, 1220, id(font_small), MUTED, 1752, 38,
+                    id(eink_thought_context).state);
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "${device_name}-fallback"
+    password: !secret ota_password
+
+captive_portal:
