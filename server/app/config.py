@@ -19,3 +19,7 @@ METEOBLUE_LAT = LAT
 METEOBLUE_LON = LON
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+
+HA_URL = os.environ.get("HA_URL", "")  # e.g. https://homeassistant.local:8123
+HA_TOKEN = os.environ.get("HA_TOKEN", "")  # long-lived access token
+HA_ENTITY_PREFIX = os.environ.get("HA_ENTITY_PREFIX", "sensor.eink_")

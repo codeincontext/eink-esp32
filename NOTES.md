@@ -189,6 +189,8 @@ Docker container (OMV) → MQTT broker (existing, Home Assistant) → ESP32 → 
 - [ ] Wildcard/LLM mode
 - [ ] Consider WROVER upgrade path for CalEPD
 - [ ] Migrate weather "daily condition" from Open-Meteo to Météo-France direct (see below)
+- [ ] Evaluate ESPHome + IT8951 driver as a SensCraft alternative (see below)
+- [ ] If ESPHome path wins: remove SensCraft publish, env vars, and `senscraft.py`
 
 ## Future: weather provider — Météo-France direct
 
@@ -207,6 +209,34 @@ Costs to plan for:
 - Endpoint paths and JSON shape to learn
 - Still need Open-Meteo for the hourly walk-window logic, OR refactor to use Météo-France for hourly too
 - Two providers running side-by-side during transition (treat the new one as `weather_alt` first, compare for a week, then promote)
+
+## Future: ESPHome on the reTerminal E1003
+
+Alternative to the SensCraft HMI cloud path. Same hardware, different software stack.
+
+Reference: [XDA article — touch-enabled e-paper Home Assistant dashboard](https://www.xda-developers.com/built-touch-enabled-epaper-home-assistant-dashboard-better-any-tablet/) and [Adam-Home-Assistant-Snippets ESPHome configs](https://github.com/Incipiens/Adam-Home-Assistant-Snippets/tree/main/ESPHome/reTerminal%20E1003%20-%20Touch%20controls).
+
+Stack:
+- **Display driver**: [koosoli/Seeed-10.3-inch-IT8951-ESPHome-Drivers](https://github.com/koosoli/Seeed-10.3-inch-IT8951-ESPHome-Drivers) — custom ESPHome external component for the IT8951 e-paper controller. New (0 stars at time of writing) but actively maintained by the same author who built ESPHomeDesigner.
+- **Touch**: stock ESPHome [GT911 platform](https://esphome.io/components/touchscreen/gt911) — works out of the box, independent of the display driver. Touch areas are pixel rectangles that fire HA actions.
+- **Layout editor**: [koosoli/ESPHomeDesigner](https://github.com/koosoli/ESPHomeDesigner) (845 stars). Drag-and-drop canvas → generates ESPHome lambda or LVGL YAML. Distributed via HACS. Round-trip imports existing YAML back to canvas. 55+ widget modules. Specifically targets e-paper hardware.
+
+Pros vs SensCraft:
+- Fully local, no cloud dependency
+- Native HA integration (no MQTT-to-HTTP bridge)
+- Touch controls that talk directly to HA
+- Open source end-to-end
+
+Trade-offs:
+- IT8951 driver lacks **partial refresh** (open issue #1). The XDA article reports ~15s full refresh, but that's the driver's current waveform choice (likely GC16 + clear cycles), **not a hardware limit**. The IT8951 hardware supports multiple waveforms: GC16 ~450–700ms (full grayscale), DU ~250–300ms (1-bit fast text), A2 ~120ms (animation). With waveform selection a full redraw can be sub-second, which makes touch responses feel near-instant and `mode: restart` debounce less critical. Worth checking what mode the driver uses by default and whether it can be picked per-update.
+- Layout has the **same fundamental problem as SensCraft**: absolute pixel positioning, no flow layout. ESPHomeDesigner's `print_wrapped_text` helper does runtime word-wrap inside a single text box, but content below doesn't reflow when text overflows. Have to leave worst-case gaps between widgets manually. LVGL output supports grid layout (`NxM`) but not flex.
+- LLM narrative + Open-Meteo logic would need to move from our Python server into either ESPHome's HTTP fetch + lambda parsing, or stay in Python and publish into HA as sensor entities that the device reads via the HA API integration. The latter is cleaner.
+
+Migration order if we ever do it:
+1. Port the daily payload into HA sensor entities (one per field — date, weather.today.body, walk, upcoming.0.text, etc.)
+2. Flash ESPHome on the device with the IT8951 driver
+3. Build initial layout in ESPHomeDesigner pulling from those sensors
+4. Add touch interactions later
 
 ## Future: 13.3" Spectra 6 full-colour e-ink
 
