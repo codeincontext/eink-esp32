@@ -191,6 +191,8 @@ Docker container (OMV) → MQTT broker (existing, Home Assistant) → ESP32 → 
 - [ ] Migrate weather "daily condition" from Open-Meteo to Météo-France direct (see below)
 - [ ] Evaluate ESPHome + IT8951 driver as a SensCraft alternative (see below)
 - [ ] If ESPHome path wins: remove SensCraft publish, env vars, and `senscraft.py`
+- [ ] File issue / PR upstream on `koosoli/Seeed-10.3-inch-IT8951-ESPHome-Drivers`: text antialiasing only works when an explicit background colour is passed to `it.print(...)`. Without it, ESPHome's bpp:4 font renderer blends against an assumed-black backdrop, which produces smooth white-on-dark text but flattens black-on-light text to hard 1-bit. Workaround in our YAML is to pass the background colour to every `it.print` call. Driver could either default to assuming WHITE bg, or document the requirement. See test grid in commit history.
+- [ ] Consider switching from lambda-based `display:` to LVGL (`lvgl:`) for layout — gives proper grid containers (`LV_GRID_CONTENT` for content-sized rows, `LV_GRID_FR` for fractional space), declarative vertical/horizontal alignment, and reflow when text wraps. Trade-offs: it's a full rewrite of the display config, ~150–300KB more firmware, and LVGL renders text through its own font engine which bypasses ESPHome's `display::print` — so we'd need to re-verify that the explicit-background-colour antialiasing trick still applies (likely doesn't; LVGL has its own anti-aliasing config). Defer until lambda + manual measuring becomes the bottleneck.
 
 ## Future: weather provider — Météo-France direct
 

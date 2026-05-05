@@ -31,7 +31,9 @@ def build() -> dict:
     wx = weather.get_weather()
     if wx:
         payload["weather"] = wx.get("days", {})
-        if "walk" in wx:
-            payload["walk"] = wx["walk"]
+        timeline = wx.get("walk_timeline")
+        if timeline:
+            payload["walk_timeline_rain"] = timeline["rain"]
+            payload["walk_timeline_temp"] = timeline["temp"]
 
     return payload

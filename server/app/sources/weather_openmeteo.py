@@ -149,6 +149,101 @@ def _walk_summary(hourly: dict) -> str | None:
     return f"Dry {start_h}h–{end_h}h ({round(window_temp)}°C)"
 
 
+TIMELINE_HOURS = range(7, 21)  # 07h–20h, last segment = 20:00–21:00
+RAIN_LIGHT_MM = 0.01     # any precipitation at all → light
+RAIN_HEAVY_MM = 2.0      # mm/h above which is "heavy"
+EXTREME_OFFSET = 5       # °C — extreme = comfort ± this
+
+# Hot side — about the dog. Constant year-round; Pixel doesn't dress down for summer.
+TEMP_HOT_COMFORT = 22
+
+# Cold side — about the human. Shifts seasonally because you dress for the weather.
+TEMP_COLD_COMFORT_BY_MONTH = {
+    1:  -5,   # Jan
+    2:  -5,   # Feb
+    3:  2,    # Mar
+    4:  5,    # Apr
+    5:  8,    # May
+    6:  12,   # Jun
+    7:  14,   # Jul
+    8:  14,   # Aug
+    9:  10,   # Sep
+    10: 5,    # Oct
+    11: 0,    # Nov
+    12: -5,   # Dec
+}
+
+
+def _rain_score(precip_mm: float) -> int:
+    """0 = dry, 1 = light rain, 2 = heavy rain."""
+    if precip_mm >= RAIN_HEAVY_MM:
+        return 2
+    if precip_mm >= RAIN_LIGHT_MM:
+        return 1
+    return 0
+
+
+def _temp_score(temp_c: float, cold_comfort: float) -> str:
+    """Direction-aware temp score:
+        '0' = comfortable
+        'c' = mildly cold, 'C' = extreme cold
+        'h' = mildly hot,  'H' = extreme hot
+    """
+    if temp_c > TEMP_HOT_COMFORT + EXTREME_OFFSET:
+        return "H"
+    if temp_c > TEMP_HOT_COMFORT:
+        return "h"
+    if temp_c < cold_comfort - EXTREME_OFFSET:
+        return "C"
+    if temp_c < cold_comfort:
+        return "c"
+    return "0"
+
+
+def _walk_timeline(hourly: dict, today_str: str) -> dict[str, str] | None:
+    """Per-hour walkability for today, returned as two strings:
+        rain: per-hour rain score (0=dry, 1=light, 2=heavy)
+        temp: per-hour temp score (0=comfortable, 1=uncomfortable, 2=extreme)"""
+    times = hourly.get("time", [])
+    precip_p = hourly.get(f"precipitation_{PRIMARY_MODEL}", [])
+    precip_f = hourly.get(f"precipitation_{FALLBACK_MODEL}", [])
+    temp_p = hourly.get(f"temperature_2m_{PRIMARY_MODEL}", [])
+    temp_f = hourly.get(f"temperature_2m_{FALLBACK_MODEL}", [])
+
+    today_dt = datetime.strptime(today_str, "%Y-%m-%d")
+    cold_comfort = TEMP_COLD_COMFORT_BY_MONTH.get(today_dt.month, 5)
+
+    by_hour = {}
+    for i, t in enumerate(times):
+        if not t.startswith(today_str):
+            continue
+        hour = int(t[11:13])
+        if hour not in TIMELINE_HOURS:
+            continue
+        precip = precip_p[i] if i < len(precip_p) and precip_p[i] is not None else None
+        if precip is None:
+            precip = precip_f[i] if i < len(precip_f) and precip_f[i] is not None else 0
+        temp = temp_p[i] if i < len(temp_p) and temp_p[i] is not None else None
+        if temp is None:
+            temp = temp_f[i] if i < len(temp_f) and temp_f[i] is not None else 15
+        by_hour[hour] = (precip or 0, temp if temp is not None else 15)
+
+    if not by_hour:
+        return None
+
+    rain_out = []
+    temp_out = []
+    for hour in TIMELINE_HOURS:
+        if hour not in by_hour:
+            rain_out.append("0")
+            temp_out.append("0")
+            continue
+        precip, temp = by_hour[hour]
+        rain_out.append(str(_rain_score(precip)))
+        temp_out.append(_temp_score(temp, cold_comfort))
+    return {"rain": "".join(rain_out), "temp": "".join(temp_out)}
+
+
 # WMO codes that imply precipitation (drizzle/rain/snow/showers/thunder).
 # If AROME's hourly precipitation says 0 for an hour with one of these codes,
 # we treat the code as "overcast" (3) instead — the high-res precip is ground
@@ -218,10 +313,14 @@ def _daytime_extremes(hourly: dict, date_str: str) -> tuple[float | None, float 
     return max(temps), min(temps)
 
 
-def _format_body(icon: str, condition: str, high: int, low: int, today: bool = False) -> str:
+def _format_body(icon: str, condition: str, high: int, low: int, today: bool = False) -> tuple[str, str]:
+    """Return (main, aux) for the day. main is the headline part rendered in
+    full ink; aux is the secondary parenthetical (e.g. "(min 10)") meant to be
+    rendered in a muted colour. aux is empty when there's nothing secondary."""
     prefix = f"{icon} " if icon else ""
-    temp = f"{high}°C (min {low})" if today else f"{high}/{low}°C"
-    return f"{prefix}{condition}, {temp}"
+    if today:
+        return f"{prefix}{condition}, {high}°C", f"(min {low})"
+    return f"{prefix}{condition}, {high}/{low}°C", ""
 
 
 def _format_summary(label: str, body: str) -> str:
@@ -274,29 +373,24 @@ def get_weather() -> dict | None:
         snow_cm = round(_pick(daily, "snowfall_sum", i) or 0, 1)
         precip_prob = _pick(daily, "precipitation_probability_max", i)
         is_today = i == 0
-        body = _format_body("", condition, high, low, today=is_today)
+        body, _ = _format_body("", condition, high, low, today=is_today)
         days[key] = {
-            "summary": _format_summary(label, body),
             "label": label,
-            "label_short": label_short,
             "body": body,
-            "precip_summary": _format_precip(rain_mm, snow_cm, precip_prob),
             "icon": icon,
-            "condition": condition,
             "high": high,
             "low": low,
-            "rain_mm": rain_mm,
-            "snow_cm": snow_cm,
-            "precip_prob": precip_prob,
+            "temp_low_part": f"{low}–",
+            "temp_high_part": f"{high}°C",
         }
 
     result = {"days": days}
 
     hourly = data.get("hourly")
     if hourly:
-        walk = _walk_summary(hourly)
-        if walk:
-            result["walk"] = walk
+        timeline = _walk_timeline(hourly, times[0])
+        if timeline:
+            result["walk_timeline"] = timeline
 
         day_dates = [(k, times[i]) for i, k in enumerate(slot_keys) if i < len(times)]
         narratives = weather_narrative.get_narratives(

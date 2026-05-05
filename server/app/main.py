@@ -6,7 +6,6 @@ import traceback
 from . import config
 from . import display
 from . import ha_publish
-from . import senscraft
 
 
 def _content_hash(payload: dict) -> str:
@@ -17,7 +16,6 @@ def _content_hash(payload: dict) -> str:
 
 def main() -> None:
     print("eink-server starting")
-    print(f"  SensCraft device: {config.SENSECRAFT_DEVICE_ID}")
     if config.HA_URL:
         print(f"  HA: {config.HA_URL} (prefix {config.HA_ENTITY_PREFIX})")
     print(f"  Poll interval: {config.POLL_INTERVAL}s")
@@ -32,7 +30,6 @@ def main() -> None:
 
             if h != last_hash:
                 print(f"Content changed (hash: {h[:12]}...)")
-                senscraft.publish(payload)
                 ha_publish.publish(payload)
                 last_hash = h
             else:

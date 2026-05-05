@@ -7,3 +7,4 @@ server/data/dates.yml
 server/data/.weather_cache.json
 firmware/esphome/secrets.yaml
 firmware/esphome/.esphome/
+firmware/esphome/fonts/*.ttf

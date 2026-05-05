@@ -52,39 +52,73 @@ script:
       - component.update: epaper_display
 
 font:
+  # All fonts use bpp:4 for grayscale antialiasing. Pair with passing the
+  # actual background color to it.print so edges blend correctly.
   - file: "gfonts://Roboto"
     id: font_small
     size: 26
+    bpp: 4
     glyphs: &glyphs "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:;-!?'\"()/+ °—–"
+  - file: "gfonts://Roboto@700"
+    id: font_small_bold
+    size: 26
+    bpp: 4
+    glyphs: *glyphs
   - file: "gfonts://Roboto"
     id: font_med
-    size: 34
+    size: 38
+    bpp: 4
+    glyphs: *glyphs
+  - file: "gfonts://Roboto@700"
+    id: font_med_bold_small
+    size: 38
+    bpp: 4
     glyphs: *glyphs
   - file: "gfonts://Roboto@700"
     id: font_med_bold
-    size: 44
+    size: 64
+    bpp: 4
+    glyphs: *glyphs
+  - file: "gfonts://Roboto"
+    id: font_med_regular_large
+    size: 64
+    bpp: 4
     glyphs: *glyphs
   - file: "gfonts://Roboto@700"
     id: font_header
     size: 56
-    bpp: 4   # white-on-black antialiasing for the date in the header bar
+    bpp: 4
     glyphs: *glyphs
   - file: "gfonts://Merriweather@700"
     id: font_quote
     size: 72
+    bpp: 4
     glyphs: *glyphs
   - file: "gfonts://Merriweather"
     id: font_author
     size: 38
+    bpp: 4
     glyphs: *glyphs
   # Emoji icon font, monochrome (Noto Emoji is the line-drawn variant).
   # bpp: 4 gives 16-level grayscale antialiasing — looks much smoother on
   # the 226-DPI panel than the default 1-bit rendering.
   - file: "gfonts://Noto Emoji"
     id: font_icon
-    size: 96
+    size: 144
     bpp: 4
     glyphs: "☀🌤⛅☁🌫🌦🌧🌨❄⛈"
+  # Smaller emoji font for inline glyphs (e.g. dog-walk icon next to walk text).
+  - file: "gfonts://Noto Emoji"
+    id: font_icon_inline
+    size: 58
+    bpp: 4
+    glyphs: "🦮🐶🚶"
+  - file: "gfonts://Noto Emoji"
+    id: font_icon_xs
+    size: 28
+    bpp: 4
+    glyphs: "🌧🌡❄☀"
+
 
 # Subscribe to entities our Python server publishes via HA REST API.
 # String values use text_sensor; numeric values use sensor.
@@ -102,20 +136,60 @@ text_sensor:
     entity_id: sensor.eink_walk
     on_value: { then: [script.execute: debounced_redraw] }
   - platform: homeassistant
+    id: eink_walk_timeline_rain
+    entity_id: sensor.eink_walk_timeline_rain
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_walk_timeline_temp
+    entity_id: sensor.eink_walk_timeline_temp
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
     id: eink_today_icon
     entity_id: sensor.eink_weather_today_icon
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_today_temp_low_part
+    entity_id: sensor.eink_weather_today_temp_low_part
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_today_temp_high_part
+    entity_id: sensor.eink_weather_today_temp_high_part
     on_value: { then: [script.execute: debounced_redraw] }
   - platform: homeassistant
     id: eink_today_body
     entity_id: sensor.eink_weather_today_body
     on_value: { then: [script.execute: debounced_redraw] }
   - platform: homeassistant
-    id: eink_tomorrow_summary
-    entity_id: sensor.eink_weather_tomorrow_summary
+    id: eink_today_body_aux
+    entity_id: sensor.eink_weather_today_body_aux
     on_value: { then: [script.execute: debounced_redraw] }
   - platform: homeassistant
-    id: eink_day3_summary
-    entity_id: sensor.eink_weather_day3_summary
+    id: eink_today_narrative
+    entity_id: sensor.eink_weather_today_narrative
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_tomorrow_narrative
+    entity_id: sensor.eink_weather_tomorrow_narrative
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_day3_narrative
+    entity_id: sensor.eink_weather_day3_narrative
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_tomorrow_label
+    entity_id: sensor.eink_weather_tomorrow_label
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_tomorrow_body
+    entity_id: sensor.eink_weather_tomorrow_body
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_day3_label
+    entity_id: sensor.eink_weather_day3_label
+    on_value: { then: [script.execute: debounced_redraw] }
+  - platform: homeassistant
+    id: eink_day3_body
+    entity_id: sensor.eink_weather_day3_body
     on_value: { then: [script.execute: debounced_redraw] }
   - platform: homeassistant
     id: eink_thought_text
@@ -136,17 +210,77 @@ display:
     vcom: 1400
     update_interval: never  # only update when an entity changes
     lambda: |-
-      const auto WHITE  = Color(255, 255, 255);   // paper / background
-      const auto BLACK  = Color(0, 0, 0);         // ink / text
-      const auto GRAY   = Color(220, 220, 220);   // quote band background
-      const auto MUTED  = Color(64, 64, 64);      // secondary text on white (~75% ink)
-      const auto FOOTER = Color(60, 60, 60);      // barely-visible on black — meant to be ignored
+      // 16-level grayscale palette matching the IT8951 panel — gray_0 is
+      // pure black (full ink), gray_15 is pure white (paper). Each step is
+      // ~17 RGB units (255 / 15).
+      const auto gray_0  = Color(0, 0, 0);
+      const auto gray_1  = Color(17, 17, 17);
+      const auto gray_2  = Color(34, 34, 34);
+      const auto gray_3  = Color(51, 51, 51);
+      const auto gray_4  = Color(68, 68, 68);
+      const auto gray_5  = Color(85, 85, 85);
+      const auto gray_6  = Color(102, 102, 102);
+      const auto gray_7  = Color(119, 119, 119);
+      const auto gray_8  = Color(136, 136, 136);
+      const auto gray_9  = Color(153, 153, 153);
+      const auto gray_10 = Color(170, 170, 170);
+      const auto gray_11 = Color(187, 187, 187);
+      const auto gray_12 = Color(204, 204, 204);
+      const auto gray_13 = Color(221, 221, 221);
+      const auto gray_14 = Color(238, 238, 238);
+      const auto gray_15 = Color(255, 255, 255);
+      // Semantic aliases for layout intent.
+      const auto WHITE       = gray_15;   // paper / background
+      const auto BLACK       = gray_0;    // ink / text (primary)
+      const auto GRAY        = gray_13;   // quote band background
+      const auto PARA_MUTED  = gray_2;    // body-scale muted (walk, context)
+      const auto TITLE_MUTED = gray_4;    // bold/large muted (body_aux "(min N)")
+      const auto FOOTER      = gray_4;    // barely-visible on black header
 
-      // Word-wrap helper. Greedily fills lines up to max_width, breaking on
-      // spaces; advances y by line_height per line.
+      // Word-wrap helpers. The background color is passed to it.print so bpp:4
+      // fonts antialiase against the actual bg (otherwise ESPHome blends against
+      // an assumed-black backdrop, which makes black text on light backgrounds
+      // render as hard 1-bit).
+
+      // Returns the line count the text would occupy if wrapped to max_width,
+      // and writes the pixel width of the last line into *last_w (if not null).
+      auto count_wrapped_lines = [&](esphome::display::BaseFont* font,
+                                      int max_width, std::string text,
+                                      int *last_w = nullptr) -> int {
+        int lines = 0;
+        int last_line_w = 0;
+        while (!text.empty()) {
+          size_t end = text.length();
+          int line_w = 0;
+          while (end > 0) {
+            int x1, y1, w, h;
+            it.get_text_bounds(0, 0, text.substr(0, end).c_str(), font,
+                               TextAlign::TOP_LEFT, &x1, &y1, &w, &h);
+            if (w <= max_width) { line_w = w; break; }
+            size_t last_space = text.rfind(' ', end - 1);
+            if (last_space == std::string::npos || last_space == 0) break;
+            end = last_space;
+          }
+          if (end == 0) {
+            end = text.length();
+            int x1, y1, w, h;
+            it.get_text_bounds(0, 0, text.substr(0, end).c_str(), font,
+                               TextAlign::TOP_LEFT, &x1, &y1, &w, &h);
+            line_w = w;
+          }
+          lines++;
+          last_line_w = line_w;
+          if (end >= text.length()) break;
+          text = text.substr(end);
+          if (!text.empty() && text[0] == ' ') text = text.substr(1);
+        }
+        if (last_w) *last_w = last_line_w;
+        return lines;
+      };
+
       auto print_wrapped = [&](int x, int y, esphome::display::BaseFont* font,
-                               Color color, int max_width, int line_height,
-                               std::string text) {
+                               Color color, Color bg, int max_width,
+                               int line_height, std::string text) {
         int cy = y;
         while (!text.empty()) {
           size_t end = text.length();
@@ -160,8 +294,7 @@ display:
             end = last_space;
           }
           if (end == 0) end = text.length();
-          it.print(x, cy, font, color, TextAlign::TOP_LEFT,
-                   text.substr(0, end).c_str());
+          it.print(x, cy, font, color, text.substr(0, end).c_str(), bg);
           cy += line_height;
           if (end >= text.length()) break;
           text = text.substr(end);
@@ -173,29 +306,161 @@ display:
 
       // ------ HEADER (y 0–110, black bg, white text) ------
       it.filled_rectangle(0, 0, 1872, 110, BLACK);
-      it.printf(60, 30, id(font_header), WHITE, "%s", id(eink_date).state.c_str());
+      it.print(60, 30, id(font_header), WHITE, id(eink_date).state.c_str(), BLACK);
       it.print(1812, 40, id(font_small), FOOTER, TextAlign::TOP_RIGHT,
-               id(eink_footer).state.c_str());
+               id(eink_footer).state.c_str(), BLACK);
 
-      // ------ WEATHER (y 110–650, two columns) ------
-      // Left column — today (x 60–1100)
-      it.printf(80, 200, id(font_icon), BLACK, "%s", id(eink_today_icon).state.c_str());
-      it.printf(80, 480, id(font_med_bold), BLACK, "%s", id(eink_today_body).state.c_str());
-      it.printf(80, 540, id(font_med), MUTED, "%s", id(eink_walk).state.c_str());
+      // ------ WEATHER (y 110–650, two columns, white bg) ------
+      // Top of the band (y 110–460) reserved for upcoming events / reminders.
+      // Today block sits at the bottom of the band: icon, body, walk.
+      it.print(80, 130, id(font_icon), BLACK, id(eink_today_icon).state.c_str(), WHITE);
+      // Today's temp range, slightly down + right of the icon centerline.
+      // The "low–" prefix is muted regular weight; the "high°C" is bold black.
+      {
+        const int tx = 270;
+        const int ty = 218;
+        std::string lo = id(eink_today_temp_low_part).state;
+        std::string hi = id(eink_today_temp_high_part).state;
+        it.print(tx, ty, id(font_med_regular_large), TITLE_MUTED,
+                 TextAlign::CENTER_LEFT, lo.c_str(), WHITE);
+        int x1, y1, w, h;
+        it.get_text_bounds(0, 0, lo.c_str(), id(font_med_regular_large),
+                           TextAlign::CENTER_LEFT, &x1, &y1, &w, &h);
+        it.print(tx + w, ty, id(font_med_bold), BLACK,
+                 TextAlign::CENTER_LEFT, hi.c_str(), WHITE);
+      }
+      // Today's weather: LLM narrative (wraps to multiple lines).
+      // 3 lines of font_med_bold (64pt @ 80 line height) = ~240px, fits cleanly
+      // between the icon (ends ~274) and the timeline rain row (starts 588).
+      print_wrapped(80, 300, id(font_med_bold), BLACK, WHITE,
+                    1000, 80, id(eink_today_narrative).state);
+      // Walk timeline: dog emoji on the left, two merged shaded rows
+      // (rain on top, temp on bottom) for hours 7h–20h.
+      const int walk_y = 635;
+      it.print(80, walk_y, id(font_icon_inline), BLACK, TextAlign::CENTER_LEFT, "🦮", WHITE);
+      {
+        const int bar_x = 200;
+        const int bar_x_end = 1080;
+        const int row_h = 32;
+        const int n_hours = 14;  // 07h–20h (last segment = 20:00–21:00)
+        const int seg_w = (bar_x_end - bar_x) / n_hours;
+        const int rain_top = walk_y - row_h;
+        const int temp_top = walk_y;
+        const int bar_bottom = temp_top + row_h;
 
-      // Right column — tomorrow + day3 (x 1140–1812), bottom-anchored
-      it.printf(1140, 460, id(font_med), BLACK, "%s", id(eink_tomorrow_summary).state.c_str());
-      it.printf(1140, 520, id(font_med), BLACK, "%s", id(eink_day3_summary).state.c_str());
+        // Rain row uses '0','1','2'. Temp row encodes direction:
+        // '0' comfortable, 'c'/'h' mild cold/hot, 'C'/'H' extreme cold/hot.
+        auto fill_for = [&](char c) -> Color {
+          switch (c) {
+            case '0': return gray_15;
+            case '1': case 'c': case 'h': return gray_9;
+            case '2': case 'C': case 'H': default: return gray_2;
+          }
+        };
 
-      // ------ QUOTE BAND (y 650–1180, gray bg) ------
-      it.filled_rectangle(0, 650, 1872, 530, GRAY);
-      print_wrapped(120, 720, id(font_quote), BLACK, 1630, 96,
-                    id(eink_thought_text).state);
-      it.print(1812, 1110, id(font_author), BLACK, TextAlign::TOP_RIGHT,
-               id(eink_thought_author).state.c_str());
+        // Row labels — small thermometer + rain glyphs just left of the bars.
+        it.print(bar_x - 4, rain_top + row_h / 2, id(font_icon_xs),
+                 BLACK, TextAlign::CENTER_RIGHT, "🌧", WHITE);
+        it.print(bar_x - 4, temp_top + row_h / 2, id(font_icon_xs),
+                 BLACK, TextAlign::CENTER_RIGHT, "🌡", WHITE);
 
-      // ------ CONTEXT (y 1180–1404, white bg, small text) ------
-      print_wrapped(60, 1220, id(font_small), MUTED, 1752, 38,
+        // Rain row (top)
+        auto rain = id(eink_walk_timeline_rain).state;
+        for (int i = 0; i < n_hours && i < (int)rain.length(); i++) {
+          it.filled_rectangle(bar_x + i * seg_w, rain_top, seg_w, row_h, fill_for(rain[i]));
+        }
+        // Temp row (bottom, butted against rain row)
+        auto temp = id(eink_walk_timeline_temp).state;
+        for (int i = 0; i < n_hours && i < (int)temp.length(); i++) {
+          it.filled_rectangle(bar_x + i * seg_w, temp_top, seg_w, row_h, fill_for(temp[i]));
+        }
+        // Single outline around the merged block.
+        it.rectangle(bar_x, rain_top, n_hours * seg_w, row_h * 2, BLACK);
+
+        // For each contiguous run of "extreme" cells, draw a small icon
+        // (white-on-black) at the centre to label what's making it bad.
+        auto draw_icons_in_runs = [&](const std::string &scores, int row_top,
+                                       const std::initializer_list<std::pair<char, const char*>> &mapping) {
+          int i = 0;
+          while (i < (int)scores.length()) {
+            char ch = scores[i];
+            const char *icon = nullptr;
+            for (auto &p : mapping) if (p.first == ch) { icon = p.second; break; }
+            if (icon == nullptr) { i++; continue; }
+            int j = i;
+            while (j < (int)scores.length() && scores[j] == ch) j++;
+            int center_x = bar_x + ((i + j) * seg_w) / 2;
+            int center_y = row_top + row_h / 2;
+            it.print(center_x, center_y, id(font_icon_xs), WHITE,
+                     TextAlign::CENTER, icon, BLACK);
+            i = j;
+          }
+        };
+        draw_icons_in_runs(rain, rain_top, {{'2', "🌧"}});
+        draw_icons_in_runs(temp, temp_top, {{'C', "❄"}, {'H', "☀"}});
+
+        // Creche pickup markers — vertical lines at the start of 9h (drop-off)
+        // and 16h (pickup). Hour h's segment starts at bar_x + (h-6)*seg_w.
+        for (int h : {9, 16}) {
+          int x = bar_x + (h - 7) * seg_w;
+          it.filled_rectangle(x - 1, rain_top, 2, row_h * 2, BLACK);
+        }
+
+        // Hour labels — every hour beneath the bars; even hours bold for rhythm.
+        for (int h = 7; h <= 20; h++) {
+          int idx = h - 7;
+          char buf[8];
+          snprintf(buf, sizeof(buf), "%dh", h);
+          auto font = (h % 2 == 0) ? id(font_small_bold) : id(font_small);
+          it.print(bar_x + idx * seg_w + seg_w / 2, bar_bottom + 8,
+                   font, PARA_MUTED, TextAlign::TOP_CENTER, buf, WHITE);
+        }
+      }
+
+      // Right column — tomorrow + day3 (x 1140–1812). Bold label, regular body.
+      auto draw_day_row = [&](int y, const std::string &label, const std::string &body) {
+        std::string lbl = label + ":";
+        it.print(1140, y, id(font_med_bold_small), BLACK, lbl.c_str(), WHITE);
+        int x1, y1, w, h;
+        it.get_text_bounds(0, 0, lbl.c_str(), id(font_med_bold_small),
+                           TextAlign::TOP_LEFT, &x1, &y1, &w, &h);
+        it.print(1140 + w + 12, y, id(font_med), BLACK, body.c_str(), WHITE);
+      };
+      draw_day_row(615, id(eink_tomorrow_label).state, id(eink_tomorrow_body).state);
+      draw_day_row(665, id(eink_day3_label).state, id(eink_day3_body).state);
+
+      // ------ QUOTE BAND (y 720–1240, gray bg) — pass GRAY as bg ------
+      it.filled_rectangle(0, 720, 1872, 520, GRAY);
+      {
+        const int band_top = 720;
+        const int band_height = 520;
+        const int quote_x = 120;
+        const int quote_max_w = 1630;
+        const int quote_line_h = 96;
+        const int gap_after_quote = 40;        // px between quote-end-of-last-line and author
+        const int author_min_x = 1100;         // clamp: author x can't sit further left than this
+        int last_line_w = 0;
+        int quote_lines = count_wrapped_lines(id(font_quote), quote_max_w,
+                                              id(eink_thought_text).state,
+                                              &last_line_w);
+        int quote_h = quote_lines * quote_line_h;
+        int quote_y = band_top + (band_height - quote_h) / 2;
+        print_wrapped(quote_x, quote_y, id(font_quote), BLACK, GRAY,
+                      quote_max_w, quote_line_h,
+                      id(eink_thought_text).state);
+        // Author left-edge anchored to end of last quote line, clamped to
+        // author_min_x so it's not orphaned mid-page when the last line is short.
+        int author_x = quote_x + last_line_w + gap_after_quote;
+        if (author_x < author_min_x) author_x = author_min_x;
+        // Author sits below the last quote line.
+        int author_y = quote_y + quote_lines * quote_line_h + 10;
+        std::string author_label = "— " + id(eink_thought_author).state;
+        it.print(author_x, author_y, id(font_author), BLACK,
+                 author_label.c_str(), GRAY);
+      }
+
+      // ------ CONTEXT (y 1240–1404, white bg) ------
+      print_wrapped(60, 1280, id(font_med), PARA_MUTED, WHITE, 1752, 48,
                     id(eink_thought_context).state);
 
 logger:

@@ -1,12 +1,5 @@
 import os
 
-SENSECRAFT_API_URL = os.environ.get(
-    "SENSECRAFT_API_URL",
-    "https://sensecraft-hmi-api.seeed.cc/api/v1/user/device/push_data",
-)
-SENSECRAFT_API_KEY = os.environ.get("SENSECRAFT_API_KEY", "")
-SENSECRAFT_DEVICE_ID = int(os.environ.get("SENSECRAFT_DEVICE_ID", "0"))
-
 POLL_INTERVAL = int(os.environ.get("POLL_INTERVAL", "300"))
 DATA_DIR = os.environ.get("DATA_DIR", "data")
 
